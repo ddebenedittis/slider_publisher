@@ -12,7 +12,6 @@ float_topic:
     some_float:   # field name can be used here, no need for to:
         min: -pi
         max: pi
-
 text_topic:
     type: example_interfaces/String
     message:

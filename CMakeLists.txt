@@ -6,7 +6,7 @@ find_package(ament_cmake REQUIRED)
 install(DIRECTORY examples
         DESTINATION share/${PROJECT_NAME})
 
-install(PROGRAMS src/slider_publisher
+install(PROGRAMS src/slider_publisher.py
         DESTINATION lib/${PROJECT_NAME})
 
 ament_package()
