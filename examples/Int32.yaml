@@ -1,0 +1,9 @@
+timestep:
+    type: std_msgs/Int32
+    some_int:
+        playable: True
+        loop: True
+        min: 0
+        max: 100
+        to: data
+        default: 0

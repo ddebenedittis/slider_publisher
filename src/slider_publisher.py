@@ -149,6 +149,9 @@ class Control:
             msg = str(msg()).split('(')[0].replace('.','/')
             raise AttributeError(f'{msg}: {info["to"]} is not a basic type, cannot create control')
         
+        self.playable = info.get('playable', False)
+        self.loop = info.get('loop', False)
+        
         if self.type in (int,float):
             if 'min' in info and 'max' in info:
                 self.min = self.type(robust_eval(info['min']))
@@ -261,7 +264,22 @@ class Control:
         self.reset()
         return key_layout
     
-
+    def play(self):
+        if self.type not in (int,float):
+            return
+        
+        if self.playable:
+            self.value += 1
+            
+        if self.loop and hasattr(self, 'min') and hasattr(self, 'max'):
+            if self.value > self.max:
+                self.value = self.min
+        else:
+            self.value = min(self.max, self.value)
+            
+        self.display.setText(f"{self.value}")
+        self.slider.setValue(self.value)
+                
 class Publisher:
     '''
     A publisher is either:
@@ -419,7 +437,7 @@ class SliderPublisher(QWidget):
             else:
                 pkg,msg = msg.split('/')
                 interface = None
-            
+                        
             if interface is None:
                 # guess msg or srv
                 here = {}
@@ -468,6 +486,24 @@ class SliderPublisher(QWidget):
         self.reset_button = QPushButton('Reset', self)
         self.reset_button.clicked.connect(self.reset)
         self.vlayout.addWidget(self.reset_button)
+        
+        # =================================================================== #
+        
+        self.play = False
+        self.k = 0
+        
+        if node.declare_parameter('play_button', False).value:
+            button_layout = QHBoxLayout()
+            
+            self.stop_button = QPushButton('Stop', self)
+            self.stop_button.clicked.connect(lambda: setattr(self, 'stop', True))
+            button_layout.addWidget(self.stop_button)
+            
+            self.play_button = QPushButton('Play', self)
+            self.play_button.clicked.connect(lambda: setattr(self, 'play', True))
+            button_layout.addWidget(self.play_button)
+            
+            self.vlayout.addLayout(button_layout)
 
     def reset(self, event):
         for control in self.controls.values():
@@ -477,6 +513,11 @@ class SliderPublisher(QWidget):
     def publish(self):
         for pub in self.publishers:
             self.publishers[pub].update(self.controls)
+            
+        if self.play:
+            for value in self.controls.values():
+                value.play()
+            self.k += 1
             
     def closeEvent(self, event):
         self.running = False
@@ -519,4 +560,3 @@ def main(args=None):
 
 if __name__ == "__main__":
     main()
- 
