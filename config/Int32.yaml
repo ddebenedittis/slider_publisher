@@ -4,6 +4,6 @@ timestep:
         playable: True
         loop: True
         min: 0
-        max: 100
+        max: 407
         to: data
         default: 0
